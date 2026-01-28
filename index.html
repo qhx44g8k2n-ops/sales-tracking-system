@@ -1,0 +1,3295 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><!-- أضف هذه الأزرار في header-actions -->
+<button class="btn btn-info" onclick="window.open('import-export.html', '_blank')">
+    <i class="fas fa-exchange-alt"></i> Import/Export Tools
+</button>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Crispy Chicken - Delivery Management System</title>
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #c0392b;
+            --info-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --white: #ffffff;
+            --gray: #bdc3c7;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 10px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #c0392b);
+            color: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .target-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            backdrop-filter: blur(5px);
+        }
+
+        .target-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .target-group input {
+            border: none;
+            background: rgba(255,255,255,0.9);
+            font-weight: bold;
+            color: var(--primary-color);
+            width: 80px;
+            outline: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            transition: var(--transition);
+        }
+
+        .control-panel:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .control-panel .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--white);
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover { 
+            opacity: 0.9; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn:active { transform: translateY(0); }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-warning { background-color: var(--warning-color); color: var(--dark-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-info { background-color: var(--info-color); }
+        
+        .btn-end-day {
+            background-color: var(--danger-color);
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); }
+        }
+
+        /* Dashboard Stats */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+        }
+        
+        .stat-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card i {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .stat-card h3 { 
+            font-size: 2.2rem; 
+            margin-bottom: 5px; 
+            color: var(--secondary-color); 
+            font-weight: 700;
+        }
+        .stat-card p { 
+            color: #7f8c8d; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .stat-card .stat-change.positive { color: var(--success-color); }
+        .stat-card .stat-change.negative { color: var(--danger-color); }
+
+        .stat-card.total { border-left: 4px solid var(--info-color); }
+        .stat-card.total i { color: var(--info-color); }
+        .stat-card.delivered { border-left: 4px solid var(--success-color); }
+        .stat-card.delivered i { color: var(--success-color); }
+        .stat-card.outfor { border-left: 4px solid var(--primary-color); }
+        .stat-card.outfor i { color: var(--primary-color); }
+        .stat-card.failed { border-left: 4px solid var(--danger-color); }
+        .stat-card.failed i { color: var(--danger-color); }
+        .stat-card.pending { border-left: 4px solid var(--warning-color); }
+        .stat-card.pending i { color: var(--warning-color); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            background-color: #f1f1f1;
+            padding: 5px;
+            border-radius: var(--radius);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #7f8c8d;
+            transition: var(--transition);
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .tab:hover { 
+            color: var(--primary-color); 
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        .tab.active { 
+            background-color: var(--primary-color); 
+            color: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2.5fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .chart-card, .table-card, .management-card {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        
+        .chart-card:hover, .table-card:hover, .management-card:hover {
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Chart Fix */
+        .chart-box {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            flex-grow: 1;
+            min-height: 250px;
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+            border-radius: var(--radius);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        
+        th { 
+            padding: 15px 12px; 
+            text-align: left; 
+            border-bottom: 2px solid #eee; 
+            cursor: pointer; 
+            user-select: none;
+            color: #555;
+            white-space: nowrap;
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        
+        th:hover { background-color: #f1f7fc; color: var(--primary-color); }
+        
+        th i { margin-left: 5px; font-size: 0.8em; color: #ccc; }
+        th.sorted-asc i, th.sorted-desc i { color: var(--primary-color); }
+
+        td { padding: 15px 12px; border-bottom: 1px solid #eee; }
+        
+        tbody tr:hover { background-color: #f1f7fc; cursor: pointer; }
+        tbody tr:nth-child(even) { background-color: #fafafa; }
+        tbody tr:nth-child(even):hover { background-color: #f1f7fc; }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-assigned { background-color: #d1ecf1; color: #0c5460; }
+        .status-outfordelivery { background-color: #cce5ff; color: #004085; }
+        .status-delivered { background-color: #d4edda; color: #155724; }
+        .status-cancelled { background-color: #f8d7da; color: #721c24; }
+        .status-postponed { background-color: #e2e3e5; color: #383d41; }
+        .status-returned { background-color: #e0cffc; color: #45138c; }
+
+        /* Modal */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0;
+            width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--white); 
+            padding: 0;
+            width: 90%; max-width: 650px; 
+            border-radius: var(--radius);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease-out;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-color), #c0392b);
+            color: var(--white);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        
+        .modal-header h2 { margin: 0; font-size: 1.3rem; }
+
+        .close-btn { 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: rgba(255,255,255,0.8);
+            transition: var(--transition);
+        }
+        .close-btn:hover { color: var(--white); transform: rotate(90deg); }
+
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .modal-body .full-width { grid-column: span 2; }
+
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        /* Agent Performance */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .agent-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--primary-color);
+            transition: var(--transition);
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #c0392b);
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .agent-details h4 { margin: 0; font-size: 1.2rem; color: var(--secondary-color); }
+        .agent-stats { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .mini-badge { 
+            font-size: 0.75rem; 
+            padding: 4px 10px; 
+            background: #eee; 
+            border-radius: 12px; 
+            color: #666;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .progress-section { margin-top: 20px; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; }
+        
+        .progress-track {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #2ecc71);
+            width: 0%;
+            transition: width 0.8s ease;
+            border-radius: 5px;
+        }
+
+        /* Management Section */
+        .management-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .list-container {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+            transition: var(--transition);
+        }
+
+        .list-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .list-item button {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .list-item button:hover {
+            transform: scale(1.2);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, var(--primary-color), #c0392b);
+            color: var(--white);
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .action-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Utility */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); 
+            z-index: 2000; 
+            display: none;
+            justify-content: center; align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .spinner { 
+            border: 5px solid #f3f3f3; 
+            border-top: 5px solid var(--primary-color); 
+            border-radius: 50%; 
+            width: 50px; height: 50px; 
+            animation: spin 1s linear infinite; 
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Notification Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .toast {
+            min-width: 300px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s;
+            border-left: 5px solid;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-color: var(--success-color); }
+        .toast.success i { color: var(--success-color); }
+        
+        .toast.error { border-color: var(--danger-color); }
+        .toast.error i { color: var(--danger-color); }
+
+        .toast.info { border-color: var(--info-color); }
+        .toast.info i { color: var(--info-color); }
+
+        /* Confirmation Dialog */
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .confirm-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--radius);
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .confirm-content h3 {
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .confirm-content p {
+            margin-bottom: 25px;
+            color: #666;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Alert Badge */
+        .alert-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .alert-danger { background: var(--danger-color); color: white; }
+        .alert-warning { background: var(--warning-color); color: black; }
+
+        /* Status Legend */
+        .status-legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Print Styles */
+        @media print {
+            header, .control-panel, .quick-actions, .tabs, .modal, .toast-container, .confirm-dialog {
+                display: none !important;
+            }
+            
+            .container {
+                padding: 0;
+                max-width: 100%;
+            }
+            
+            .table-responsive {
+                overflow: visible;
+            }
+            
+            body {
+                background: white;
+                padding: 20px;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .management-grid { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            header { flex-direction: column; align-items: stretch; }
+            .header-actions { justify-content: space-between; margin-top: 10px; }
+            .control-panel .row { flex-direction: column; align-items: stretch; }
+            .modal-body { grid-template-columns: 1fr; }
+            .modal-body .full-width { grid-column: span 1; }
+            .tabs { flex-direction: column; }
+            .tab { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing data...</p>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirmDialog" class="confirm-dialog">
+        <div class="confirm-content">
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <p id="confirmMessage">Are you sure you want to proceed?</p>
+            <div class="confirm-buttons">
+                <button class="btn btn-secondary" onclick="closeConfirmDialog()">Cancel</button>
+                <button id="confirmBtn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-box-open"></i> Order Details</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Order ID</label>
+                    <input type="text" id="modalOrderId" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" id="modalDate" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="modalCustomer" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="modalPhone" class="form-control">
+                        <button type="button" class="btn btn-success" onclick="callCustomer()" title="Call"><i class="fas fa-phone"></i></button>
+                        <button type="button" class="btn btn-info" onclick="sendSMS()" title="SMS"><i class="fas fa-sms"></i></button>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Address</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="modalAddress" class="form-control">
+                        <button type="button" class="btn btn-info" onclick="openMap()" title="Map"><i class="fas fa-map-marker-alt"></i></button>
+                        <button type="button" class="btn btn-warning" onclick="copyAddress()" title="Copy"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Amount (AED)</label>
+                    <input type="number" id="modalAmount" class="form-control" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Outlet</label>
+                    <select id="modalOutlet" class="form-control">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="modalStatus" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="Assigned">Assigned</option>
+                        <option value="Out for Delivery">Out for Delivery</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Postponed">Postponed</option>
+                        <option value="Returned">Returned</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Agent</label>
+                    <select id="modalAgent" class="form-control">
+                        <option value="">Unassigned</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Payment Status</label>
+                    <select id="modalPayment" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="COD">Cash on Delivery</option>
+                        <option value="Refunded">Refunded</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>Delivery Notes</label>
+                    <textarea id="modalNotes" class="form-control" placeholder="Update notes..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label>Order Items</label>
+                    <textarea id="modalItems" class="form-control" placeholder="Enter order items..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="deleteOrder()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveOrder()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cogs"></i> System Settings</h2>
+                <span class="close-btn" onclick="closeSettings()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group full-width">
+                    <label>Company Name</label>
+                    <input type="text" id="companyName" class="form-control" value="Delivery Crispy Chicken">
+                </div>
+                <div class="form-group">
+                    <label>Default Target (AED)</label>
+                    <input type="number" id="defaultTarget" class="form-control" value="2000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Auto-save Interval (seconds)</label>
+                    <input type="number" id="autoSaveInterval" class="form-control" value="30" min="5" max="300">
+                </div>
+                <div class="form-group full-width">
+                    <label>
+                        <input type="checkbox" id="enableNotifications"> Enable Browser Notifications
+                    </label>
+                </div>
+                <div class="form-group full-width">
+                    <label>
+                        <input type="checkbox" id="enableSound"> Enable Sound Alerts
+                    </label>
+                </div>
+                <div class="form-group full-width">
+                    <label>Export Format</label>
+                    <select id="exportFormat" class="form-control">
+                        <option value="excel">Excel (XLSX)</option>
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="resetSystem()">
+                    <i class="fas fa-bomb"></i> Reset System
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1><i class="fas fa-drumstick-bite"></i> <span id="companyHeader">Delivery Crispy Chicken</span></h1>
+                <div class="header-info">
+                    <span><i class="fas fa-calendar"></i> <span id="currentDate"></span></span>
+                    <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="target-group">
+                    <label for="dailyTarget">Daily Target:</label>
+                    <input type="number" id="dailyTarget" value="2000" min="0">
+                    <span>AED</span>
+                </div>
+                <button class="btn btn-info" onclick="openSettings()">
+                    <i class="fas fa-cogs"></i> Settings
+                </button>
+                <button class="btn btn-warning" onclick="printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-secondary" onclick="generateData()">
+                    <i class="fas fa-magic"></i> Sample Data
+                </button>
+                <button class="btn btn-success" onclick="exportData()">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <label for="fileInput" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Import
+                </label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                <button class="btn btn-end-day" onclick="endDay()">
+                    <i class="fas fa-power-off"></i> End Day
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="action-card" onclick="switchTab('orders')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Manage Orders</h3>
+                </div>
+                <div class="action-card" onclick="switchTab('performance')">
+                    <i class="fas fa-users"></i>
+                    <h3>Agent Performance</h3>
+                </div>
+                <div class="action-card" onclick="switchTab('analytics')">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Analytics</h3>
+                </div>
+                <div class="action-card" onclick="switchTab('management')">
+                    <i class="fas fa-cogs"></i>
+                    <h3>System Management</h3>
+                </div>
+                <div class="action-card" onclick="addNewOrder()">
+                    <i class="fas fa-plus-circle"></i>
+                    <h3>New Order</h3>
+                </div>
+                <div class="action-card" onclick="showAlerts()">
+                    <i class="fas fa-bell"></i>
+                    <h3>Alerts <span id="alertCount" class="alert-badge alert-danger" style="display:none">0</span></h3>
+                </div>
+            </section>
+
+            <!-- Dashboard Stats -->
+            <section class="dashboard-stats">
+                <div class="stat-card total" onclick="filterByStatus('All')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3 id="statTotal">0</h3>
+                    <p>Total Orders</p>
+                    <div class="stat-change positive" id="statTotalChange">+0%</div>
+                </div>
+                <div class="stat-card pending" onclick="filterByStatus('Pending')">
+                    <i class="fas fa-clock"></i>
+                    <h3 id="statPending">0</h3>
+                    <p>Pending/Assigned</p>
+                    <div class="stat-change" id="statPendingChange">0%</div>
+                </div>
+                <div class="stat-card outfor" onclick="filterByStatus('Out for Delivery')">
+                    <i class="fas fa-truck"></i>
+                    <h3 id="statOut">0</h3>
+                    <p>Out for Delivery</p>
+                    <div class="stat-change" id="statOutChange">0%</div>
+                </div>
+                <div class="stat-card delivered" onclick="filterByStatus('Delivered')">
+                    <i class="fas fa-check-circle"></i>
+                    <h3 id="statDelivered">0</h3>
+                    <p>Delivered</p>
+                    <div class="stat-change positive" id="statDeliveredChange">+0%</div>
+                </div>
+                <div class="stat-card failed" onclick="filterByStatus('Cancelled,Returned')">
+                    <i class="fas fa-times-circle"></i>
+                    <h3 id="statFailed">0</h3>
+                    <p>Failed/Cancelled</p>
+                    <div class="stat-change negative" id="statFailedChange">0%</div>
+                </div>
+            </section>
+
+            <!-- Filters -->
+            <section class="control-panel">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Date Range</label>
+                        <input type="date" id="filterDateFrom" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>to</label>
+                        <input type="date" id="filterDateTo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Agent</label>
+                        <select id="filterAgent" class="form-control">
+                            <option value="All">All Agents</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="filterStatus" class="form-control">
+                            <option value="All">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Assigned">Assigned</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="Postponed">Postponed</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Outlet</label>
+                        <select id="filterOutlet" class="form-control">
+                            <option value="All">All Outlets</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Search</label>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search orders...">
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshUI()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+                <div class="status-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #fff3cd;"></div>
+                        <span>Pending</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #d1ecf1;"></div>
+                        <span>Assigned</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #cce5ff;"></div>
+                        <span>Out for Delivery</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #d4edda;"></div>
+                        <span>Delivered</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f8d7da;"></div>
+                        <span>Cancelled</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('orders')">
+                    Order Management
+                    <span id="orderCountBadge" class="tab-badge" style="display:none">0</span>
+                </div>
+                <div class="tab" onclick="switchTab('performance')">
+                    Agent Performance
+                    <span id="agentCountBadge" class="tab-badge" style="display:none">0</span>
+                </div>
+                <div class="tab" onclick="switchTab('analytics')">
+                    Analytics
+                </div>
+                <div class="tab" onclick="switchTab('management')">
+                    System Management
+                </div>
+            </div>
+
+            <!-- Tab: Orders -->
+            <div id="orders-tab" class="tab-content active">
+                <div class="content-grid">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <span>Status Overview</span>
+                            <button class="btn btn-sm btn-info" onclick="refreshCharts()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                        <div class="chart-box">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="table-card">
+                        <div class="card-header">
+                            <span>Active Orders</span>
+                            <div>
+                                <button class="btn btn-sm btn-success" onclick="bulkAssign()">
+                                    <i class="fas fa-user-check"></i> Bulk Assign
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="bulkDelete()">
+                                    <i class="fas fa-trash"></i> Bulk Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="ordersTable">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAll"></th>
+                                        <th onclick="handleSort('Order no')">Order ID <i class="fas fa-sort"></i></th>
+                                        <th onclick="handleSort('Cus. Name')">Customer <i class="fas fa-sort"></i></th>
+                                        <th onclick="handleSort('Order Date')">Date <i class="fas fa-sort"></i></th>
+                                        <th onclick="handleSort('Agent Name')">Agent <i class="fas fa-sort"></i></th>
+                                        <th onclick="handleSort('Order Total')">Amount <i class="fas fa-sort"></i></th>
+                                        <th onclick="handleSort('status')">Status <i class="fas fa-sort"></i></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody"><!-- Data rows here --></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span id="tableInfo">Showing 0 of 0 orders</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-secondary" onclick="previousPage()" id="prevBtn" disabled>
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </button>
+                                <span id="pageInfo" style="margin: 0 10px;">Page 1 of 1</span>
+                                <button class="btn btn-sm btn-secondary" onclick="nextPage()" id="nextBtn" disabled>
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Performance -->
+            <div id="performance-tab" class="tab-content">
+                <div class="table-card">
+                    <div class="card-header">
+                        <span>Agent Performance Tracker</span>
+                        <button class="btn btn-sm btn-info" onclick="exportPerformance()">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                    <div class="agent-grid" id="agentGrid">
+                        <!-- Agent cards here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Analytics -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="content-grid">
+                    <div class="chart-card">
+                        <div class="card-header">Revenue by Outlet</div>
+                        <div class="chart-box">
+                            <canvas id="outletChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="card-header">Peak Delivery Hours</div>
+                        <div class="chart-box">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card" style="grid-column: span 2;">
+                        <div class="card-header">Daily Revenue Trend</div>
+                        <div class="chart-box">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Management -->
+            <div id="management-tab" class="tab-content">
+                <div class="management-card">
+                    <div class="card-header">
+                        <span><i class="fas fa-cogs"></i> System Management</span>
+                        <button class="btn btn-sm btn-danger" onclick="backupSystem()">
+                            <i class="fas fa-download"></i> Backup
+                        </button>
+                    </div>
+                    <div class="management-grid">
+                        <div>
+                            <h4 style="margin-bottom: 10px;">Branches/Outlets</h4>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" id="newBranch" class="form-control" placeholder="Add new branch">
+                                <button class="btn btn-primary" onclick="addBranch()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div id="branchList" class="list-container">
+                                <!-- Branches will be listed here -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 10px;">Delivery Agents</h4>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" id="newAgent" class="form-control" placeholder="Add new agent">
+                                <button class="btn btn-primary" onclick="addAgent()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div id="agentList" class="list-container">
+                                <!-- Agents will be listed here -->
+                            </div>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <h4 style="margin-bottom: 10px;">System Information</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div>
+                                    <p><strong>Total Orders:</strong> <span id="sysTotalOrders">0</span></p>
+                                    <p><strong>Data Size:</strong> <span id="sysDataSize">0 KB</span></p>
+                                </div>
+                                <div>
+                                    <p><strong>Last Backup:</strong> <span id="sysLastBackup">Never</span></p>
+                                    <p><strong>System Version:</strong> 2.0.0</p>
+                                </div>
+                                <div>
+                                    <p><strong>Auto-save:</strong> <span id="sysAutoSave">On</span></p>
+                                    <p><strong>Last Saved:</strong> <span id="sysLastSaved">Just now</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    // ================= Enhanced State Management =================
+    let ordersData = [];
+    let filteredData = [];
+    let selectedOrders = new Set();
+    let currentEditingId = null;
+    let sortCol = 'Order Date';
+    let sortAsc = false;
+    let charts = {};
+    let currentPage = 1;
+    const pageSize = 20;
+    let alerts = [];
+    let lastStats = {};
+    let autoSaveTimer = null;
+    let settings = {
+        companyName: "Delivery Crispy Chicken",
+        defaultTarget: 2000,
+        autoSaveInterval: 30,
+        enableNotifications: true,
+        enableSound: true,
+        exportFormat: "excel"
+    };
+    
+    // Enhanced data structure
+    const defaultBranches = ['Hamdan', 'Khalidiyah', 'Shabiya', 'Muroor', 'Barsa', 'Satwa', 'Al Majaz', 'Al Rigga'];
+    const defaultAgents = ['Nirjala', 'Manju Ranabhat', 'Nons Rose', 'Melvin Compendio', 'SALEH EMAD', 'Asmita Sapkota', 'MR.AHMED', 'Jasmine'];
+    
+    let branches = [];
+    let agents = [];
+
+    // DOM Elements cache
+    const els = {
+        tableBody: document.getElementById('ordersTableBody'),
+        agentGrid: document.getElementById('agentGrid'),
+        branchList: document.getElementById('branchList'),
+        agentList: document.getElementById('agentList'),
+        inputs: {
+            filterAgent: document.getElementById('filterAgent'),
+            filterStatus: document.getElementById('filterStatus'),
+            filterOutlet: document.getElementById('filterOutlet'),
+            filterDateFrom: document.getElementById('filterDateFrom'),
+            filterDateTo: document.getElementById('filterDateTo'),
+            search: document.getElementById('searchInput'),
+            dailyTarget: document.getElementById('dailyTarget'),
+            file: document.getElementById('fileInput'),
+            newBranch: document.getElementById('newBranch'),
+            newAgent: document.getElementById('newAgent'),
+            selectAll: document.getElementById('selectAll')
+        },
+        stats: {
+            total: document.getElementById('statTotal'),
+            pending: document.getElementById('statPending'),
+            out: document.getElementById('statOut'),
+            delivered: document.getElementById('statDelivered'),
+            failed: document.getElementById('statFailed'),
+            totalChange: document.getElementById('statTotalChange'),
+            pendingChange: document.getElementById('statPendingChange'),
+            outChange: document.getElementById('statOutChange'),
+            deliveredChange: document.getElementById('statDeliveredChange'),
+            failedChange: document.getElementById('statFailedChange')
+        },
+        modal: {
+            self: document.getElementById('orderModal'),
+            id: document.getElementById('modalOrderId'),
+            date: document.getElementById('modalDate'),
+            customer: document.getElementById('modalCustomer'),
+            phone: document.getElementById('modalPhone'),
+            address: document.getElementById('modalAddress'),
+            amount: document.getElementById('modalAmount'),
+            outlet: document.getElementById('modalOutlet'),
+            status: document.getElementById('modalStatus'),
+            agent: document.getElementById('modalAgent'),
+            notes: document.getElementById('modalNotes'),
+            items: document.getElementById('modalItems'),
+            payment: document.getElementById('modalPayment')
+        },
+        settingsModal: document.getElementById('settingsModal'),
+        confirmDialog: {
+            self: document.getElementById('confirmDialog'),
+            title: document.getElementById('confirmTitle'),
+            message: document.getElementById('confirmMessage'),
+            btn: document.getElementById('confirmBtn')
+        },
+        currentDate: document.getElementById('currentDate'),
+        currentTime: document.getElementById('currentTime'),
+        companyHeader: document.getElementById('companyHeader'),
+        alertCount: document.getElementById('alertCount'),
+        orderCountBadge: document.getElementById('orderCountBadge'),
+        agentCountBadge: document.getElementById('agentCountBadge')
+    };
+
+    // ================= Initialization =================
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeSystem();
+        setupEventListeners();
+        startAutoSave();
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        checkAlerts();
+    });
+
+    function initializeSystem() {
+        loadSettings();
+        loadSystemData();
+        loadData();
+        setupDefaultDates();
+        refreshUI();
+        checkSystemHealth();
+        
+        // Request notification permission
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }
+
+    function setupEventListeners() {
+        els.inputs.filterAgent.addEventListener('change', refreshUI);
+        els.inputs.filterStatus.addEventListener('change', refreshUI);
+        els.inputs.filterOutlet.addEventListener('change', refreshUI);
+        els.inputs.filterDateFrom.addEventListener('change', refreshUI);
+        els.inputs.filterDateTo.addEventListener('change', refreshUI);
+        els.inputs.search.addEventListener('input', debounce(refreshUI, 300));
+        els.inputs.dailyTarget.addEventListener('change', () => {
+            saveData();
+            if(document.getElementById('performance-tab').classList.contains('active')) {
+                renderAgentPerformance();
+            }
+        });
+        els.inputs.file.addEventListener('change', handleFileUpload);
+        els.inputs.selectAll.addEventListener('change', toggleSelectAll);
+        
+        // Save on beforeunload
+        window.addEventListener('beforeunload', (e) => {
+            saveData();
+            saveSettings();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'n': e.preventDefault(); addNewOrder(); break;
+                    case 's': e.preventDefault(); saveData(); showToast('Data saved', 'success'); break;
+                    case 'e': e.preventDefault(); exportData(); break;
+                    case 'f': e.preventDefault(); els.inputs.search.focus(); break;
+                    case 'r': e.preventDefault(); refreshUI(); break;
+                }
+            }
+        });
+    }
+
+    function setupDefaultDates() {
+        const today = new Date();
+        const weekAgo = new Date();
+        weekAgo.setDate(today.getDate() - 7);
+        
+        els.inputs.filterDateFrom.value = weekAgo.toISOString().split('T')[0];
+        els.inputs.filterDateTo.value = today.toISOString().split('T')[0];
+    }
+
+    // ================= Enhanced System Data Management =================
+    function loadSystemData() {
+        try {
+            const savedBranches = localStorage.getItem('deliveryApp_branches');
+            const savedAgents = localStorage.getItem('deliveryApp_agents');
+            
+            if(savedBranches) {
+                branches = JSON.parse(savedBranches);
+            } else {
+                branches = [...defaultBranches];
+                saveSystemData();
+            }
+            
+            if(savedAgents) {
+                agents = JSON.parse(savedAgents);
+            } else {
+                agents = [...defaultAgents];
+                saveSystemData();
+            }
+        } catch (e) {
+            console.error('Error loading system data:', e);
+            branches = [...defaultBranches];
+            agents = [...defaultAgents];
+            saveSystemData();
+        }
+    }
+
+    function saveSystemData() {
+        try {
+            localStorage.setItem('deliveryApp_branches', JSON.stringify(branches));
+            localStorage.setItem('deliveryApp_agents', JSON.stringify(agents));
+        } catch (e) {
+            showToast('Error saving system data: Storage may be full', 'error');
+            checkStorageQuota();
+        }
+    }
+
+    function loadSettings() {
+        const savedSettings = localStorage.getItem('deliveryApp_settings');
+        if(savedSettings) {
+            try {
+                settings = JSON.parse(savedSettings);
+                applySettings();
+            } catch (e) {
+                console.error('Error loading settings:', e);
+            }
+        }
+    }
+
+    function saveSettings() {
+        localStorage.setItem('deliveryApp_settings', JSON.stringify(settings));
+    }
+
+    function applySettings() {
+        els.inputs.dailyTarget.value = settings.defaultTarget;
+        els.companyHeader.textContent = settings.companyName;
+        document.title = settings.companyName + " - Delivery Management";
+        
+        if(settings.enableNotifications) {
+            if (Notification.permission === "granted") {
+                // Notifications are enabled
+            }
+        }
+    }
+
+    // ================= Enhanced Data Management =================
+    function generateData() {
+        showLoading(true, 'Generating sample data...');
+        
+        setTimeout(() => {
+            const statuses = ['Pending', 'Assigned', 'Out for Delivery', 'Delivered', 'Cancelled', 'Returned'];
+            const paymentMethods = ['Paid', 'Pending', 'COD', 'Refunded'];
+            const orderItems = [
+                'Crispy Chicken Bucket', 'Spicy Wings', 'French Fries', 'Coleslaw',
+                'Soft Drink', 'Family Meal', 'Chicken Sandwich', 'Nuggets'
+            ];
+            
+            const newOrders = [];
+            const today = new Date();
+            
+            for(let i=0; i<50; i++) {
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const hour = Math.floor(Math.random() * 24);
+                const orderDate = new Date(today);
+                orderDate.setDate(today.getDate() - Math.floor(Math.random() * 30));
+                orderDate.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
+                
+                const itemsCount = Math.floor(Math.random() * 3) + 1;
+                const items = [];
+                for(let j=0; j<itemsCount; j++) {
+                    items.push(orderItems[Math.floor(Math.random() * orderItems.length)]);
+                }
+                
+                newOrders.push({
+                    'Order no': `ORD-${1000 + i}`,
+                    'Order Date': orderDate.toISOString(),
+                    'Cus. Name': `Customer ${i+1}`,
+                    'Cus Phone': `+9715${Math.floor(Math.random()*9000000) + 1000000}`,
+                    'Address': `${Math.floor(Math.random()*99)} Street ${i+1}, Dubai, UAE`,
+                    'Outlet': branches[Math.floor(Math.random() * branches.length)],
+                    'Order Total': (Math.random() * 500 + 50).toFixed(2),
+                    'Agent Name': Math.random() > 0.3 ? agents[Math.floor(Math.random() * agents.length)] : '',
+                    'status': status,
+                    'Payment Status': paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+                    'Notes': Math.random() > 0.7 ? 'Special instructions here' : '',
+                    'Order Items': items.join(', '),
+                    'Created Date': new Date().toISOString(),
+                    'Last Updated': new Date().toISOString()
+                });
+            }
+            
+            ordersData = [...ordersData, ...newOrders];
+            saveData();
+            populateAgentFilter();
+            populateOutletFilter();
+            refreshUI();
+            showToast('Sample data generated successfully', 'success');
+            showLoading(false);
+        }, 800);
+    }
+
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        showLoading(true, 'Importing data...');
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = new Uint8Array(evt.target.result);
+                let json = [];
+                
+                if(file.name.endsWith('.csv')) {
+                    const csvText = new TextDecoder().decode(data);
+                    json = parseCSV(csvText);
+                } else {
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const sheetName = workbook.SheetNames[0];
+                    json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                }
+                
+                if(json.length > 0) {
+                    // Validate required fields
+                    const requiredFields = ['Order no', 'Cus. Name', 'Order Total'];
+                    const missingFields = requiredFields.filter(field => !json[0].hasOwnProperty(field));
+                    
+                    if(missingFields.length > 0) {
+                        showToast(`Missing required fields: ${missingFields.join(', ')}`, 'error');
+                        showLoading(false);
+                        return;
+                    }
+                    
+                    let importedCount = 0;
+                    let updatedCount = 0;
+                    let skippedCount = 0;
+                    
+                    json.forEach(newOrder => {
+                        // Add timestamp if missing
+                        if(!newOrder['Order Date']) {
+                            newOrder['Order Date'] = new Date().toISOString();
+                        }
+                        if(!newOrder['Created Date']) {
+                            newOrder['Created Date'] = new Date().toISOString();
+                        }
+                        newOrder['Last Updated'] = new Date().toISOString();
+                        
+                        // Set default status if missing
+                        if(!newOrder['status']) {
+                            newOrder['status'] = 'Pending';
+                        }
+                        
+                        const existingIndex = ordersData.findIndex(o => o['Order no'] === newOrder['Order no']);
+                        if(existingIndex !== -1) {
+                            // Update existing order
+                            ordersData[existingIndex] = {...ordersData[existingIndex], ...newOrder};
+                            updatedCount++;
+                        } else {
+                            // Add new order
+                            ordersData.push(newOrder);
+                            importedCount++;
+                        }
+                        
+                        // Add new branches and agents if they don't exist
+                        if(newOrder['Outlet'] && !branches.includes(newOrder['Outlet'])) {
+                            branches.push(newOrder['Outlet']);
+                        }
+                        if(newOrder['Agent Name'] && !agents.includes(newOrder['Agent Name'])) {
+                            agents.push(newOrder['Agent Name']);
+                        }
+                    });
+                    
+                    saveSystemData();
+                    saveData();
+                    renderManagementLists();
+                    populateAgentFilter();
+                    populateOutletFilter();
+                    refreshUI();
+                    
+                    showToast(`Import complete: ${importedCount} new, ${updatedCount} updated, ${skippedCount} skipped`, 'success');
+                } else {
+                    showToast('No data found in file', 'error');
+                }
+            } catch(err) {
+                console.error('Import error:', err);
+                showToast('Error reading file: ' + err.message, 'error');
+            } finally {
+                showLoading(false);
+                els.inputs.file.value = '';
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function parseCSV(csvText) {
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        return lines.slice(1).map(line => {
+            const values = line.split(',');
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = values[index] ? values[index].trim() : '';
+            });
+            return obj;
+        }).filter(obj => obj[headers[0]]); // Filter out empty rows
+    }
+
+    // ================= Enhanced Export Functions =================
+    function exportData() {
+        const format = settings.exportFormat;
+        
+        switch(format) {
+            case 'excel':
+                exportExcel();
+                break;
+            case 'pdf':
+                exportPDF();
+                break;
+            case 'csv':
+                exportCSV();
+                break;
+            default:
+                exportExcel();
+        }
+    }
+
+    function exportExcel() {
+        if(filteredData.length === 0) {
+            showToast('No data to export', 'info');
+            return false;
+        }
+        
+        try {
+            const exportData = filteredData.map(order => ({
+                'Order ID': order['Order no'],
+                'Date': new Date(order['Order Date']).toLocaleString(),
+                'Customer': order['Cus. Name'],
+                'Phone': order['Cus Phone'],
+                'Address': order['Address'],
+                'Outlet': order['Outlet'],
+                'Amount': `AED ${Number(order['Order Total'] || 0).toFixed(2)}`,
+                'Agent': order['Agent Name'] || 'Unassigned',
+                'Status': order['status'] || 'Pending',
+                'Payment': order['Payment Status'] || 'Pending',
+                'Notes': order['Notes'] || ''
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Orders");
+            
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace(/[:T]/g, '-');
+            const filename = `${settings.companyName}_Report_${timestamp}.xlsx`;
+            
+            XLSX.writeFile(wb, filename);
+            showToast('Excel report exported successfully', 'success');
+            return true;
+        } catch (error) {
+            showToast('Export failed: ' + error.message, 'error');
+            return false;
+        }
+    }
+
+    function exportPDF() {
+        showLoading(true, 'Generating PDF...');
+        
+        setTimeout(() => {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add header
+                doc.setFontSize(20);
+                doc.setTextColor(40);
+                doc.text(settings.companyName, 105, 15, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                doc.text('Delivery Report', 105, 25, { align: 'center' });
+                
+                // Add date
+                doc.setFontSize(10);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 35);
+                
+                // Create table
+                const headers = [['Order ID', 'Customer', 'Amount', 'Status', 'Agent']];
+                const data = filteredData.slice(0, 50).map(order => [
+                    order['Order no'],
+                    order['Cus. Name'],
+                    `AED ${order['Order Total']}`,
+                    order['status'],
+                    order['Agent Name'] || 'Unassigned'
+                ]);
+                
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: 45,
+                    theme: 'grid',
+                    headStyles: { fillColor: [231, 76, 60] },
+                    margin: { top: 45 }
+                });
+                
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+                const filename = `${settings.companyName}_Report_${timestamp}.pdf`;
+                
+                doc.save(filename);
+                showToast('PDF report exported successfully', 'success');
+                showLoading(false);
+                return true;
+            } catch (error) {
+                showToast('PDF export failed: ' + error.message, 'error');
+                showLoading(false);
+                return false;
+            }
+        }, 500);
+    }
+
+    function exportCSV() {
+        if(filteredData.length === 0) {
+            showToast('No data to export', 'info');
+            return false;
+        }
+        
+        try {
+            const headers = ['Order ID', 'Date', 'Customer', 'Phone', 'Address', 'Outlet', 'Amount', 'Agent', 'Status', 'Payment', 'Notes'];
+            const csvRows = [headers.join(',')];
+            
+            filteredData.forEach(order => {
+                const row = [
+                    `"${order['Order no']}"`,
+                    `"${new Date(order['Order Date']).toLocaleString()}"`,
+                    `"${order['Cus. Name']}"`,
+                    `"${order['Cus Phone']}"`,
+                    `"${order['Address']}"`,
+                    `"${order['Outlet']}"`,
+                    `"AED ${order['Order Total']}"`,
+                    `"${order['Agent Name'] || 'Unassigned'}"`,
+                    `"${order['status']}"`,
+                    `"${order['Payment Status'] || 'Pending'}"`,
+                    `"${order['Notes'] || ''}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+            const filename = `${settings.companyName}_Report_${timestamp}.csv`;
+            
+            saveAs(blob, filename);
+            showToast('CSV report exported successfully', 'success');
+            return true;
+        } catch (error) {
+            showToast('CSV export failed: ' + error.message, 'error');
+            return false;
+        }
+    }
+
+    function exportPerformance() {
+        const agentStats = calculateAgentStats();
+        const exportData = Object.values(agentStats).map(agent => ({
+            'Agent': agent.name,
+            'Total Orders': agent.total,
+            'Delivered': agent.delivered,
+            'Failed': agent.failed,
+            'Success Rate': `${agent.successRate}%`,
+            'Revenue': `AED ${agent.revenue.toFixed(2)}`,
+            'Target Achievement': `${agent.targetPercent}%`
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Performance");
+        
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        const filename = `${settings.companyName}_Performance_${timestamp}.xlsx`;
+        
+        XLSX.writeFile(wb, filename);
+        showToast('Performance report exported', 'success');
+    }
+
+    // ================= Enhanced Core UI Logic =================
+    function refreshUI() {
+        try {
+            applyFilters();
+            sortData();
+            updateStats();
+            updateTableInfo();
+            renderTable();
+            updateCharts();
+            updateBadges();
+            checkAlerts();
+            
+            if(document.getElementById('performance-tab').classList.contains('active')) {
+                renderAgentPerformance();
+            }
+            if(document.getElementById('management-tab').classList.contains('active')) {
+                updateSystemInfo();
+            }
+            
+            // Auto-save after UI refresh
+            if(settings.autoSaveInterval > 0) {
+                saveData();
+            }
+        } catch (error) {
+            console.error('Error refreshing UI:', error);
+            showToast('Error refreshing data', 'error');
+        }
+    }
+
+    function applyFilters() {
+        const fAgent = els.inputs.filterAgent.value;
+        const fStatus = els.inputs.filterStatus.value;
+        const fOutlet = els.inputs.filterOutlet.value;
+        const fDateFrom = els.inputs.filterDateFrom.value;
+        const fDateTo = els.inputs.filterDateTo.value;
+        const fSearch = els.inputs.search.value.toLowerCase();
+
+        filteredData = ordersData.filter(order => {
+            const orderDate = new Date(order['Order Date']).toISOString().split('T')[0];
+            
+            const matchesAgent = fAgent === 'All' || order['Agent Name'] === fAgent;
+            const matchesStatus = fStatus === 'All' || order['status'] === fStatus;
+            const matchesOutlet = fOutlet === 'All' || order['Outlet'] === fOutlet;
+            const matchesDateFrom = !fDateFrom || orderDate >= fDateFrom;
+            const matchesDateTo = !fDateTo || orderDate <= fDateTo;
+            const matchesSearch = !fSearch || 
+                order['Order no'].toLowerCase().includes(fSearch) ||
+                (order['Cus. Name'] && order['Cus. Name'].toLowerCase().includes(fSearch)) ||
+                (order['Cus Phone'] && order['Cus Phone'].includes(fSearch)) ||
+                (order['Address'] && order['Address'].toLowerCase().includes(fSearch));
+            
+            return matchesAgent && matchesStatus && matchesOutlet && matchesDateFrom && matchesDateTo && matchesSearch;
+        });
+        
+        currentPage = 1; // Reset to first page on filter change
+    }
+
+    function sortData() {
+        filteredData.sort((a, b) => {
+            let valA = a[sortCol];
+            let valB = b[sortCol];
+            
+            // Handle dates
+            if (sortCol.includes('Date')) {
+                valA = new Date(valA || 0).getTime();
+                valB = new Date(valB || 0).getTime();
+            } else {
+                if(valA === undefined || valA === null) valA = "";
+                if(valB === undefined || valB === null) valB = "";
+
+                if(typeof valA === 'string') valA = valA.toLowerCase();
+                if(typeof valB === 'string') valB = valB.toLowerCase();
+            }
+
+            if(valA < valB) return sortAsc ? -1 : 1;
+            if(valA > valB) return sortAsc ? 1 : -1;
+            return 0;
+        });
+        
+        // Update sort icons
+        document.querySelectorAll('th').forEach(th => {
+            th.classList.remove('sorted-asc', 'sorted-desc');
+            const icon = th.querySelector('i');
+            if(icon) icon.className = 'fas fa-sort';
+        });
+        
+        const activeTh = document.querySelector(`th[onclick*="${sortCol}"]`);
+        if(activeTh) {
+            activeTh.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+            const icon = activeTh.querySelector('i');
+            if(icon) icon.className = sortAsc ? 'fas fa-sort-up' : 'fas fa-sort-down';
+        }
+    }
+
+    function handleSort(col) {
+        if(sortCol === col) {
+            sortAsc = !sortAsc;
+        } else {
+            sortCol = col;
+            sortAsc = true;
+        }
+        refreshUI();
+    }
+
+    function updateStats() {
+        const currentStats = {
+            total: 0,
+            pending: 0,
+            out: 0,
+            delivered: 0,
+            failed: 0,
+            revenue: 0
+        };
+
+        filteredData.forEach(o => {
+            currentStats.total++;
+            if(o.status === 'Delivered') {
+                currentStats.delivered++;
+                currentStats.revenue += Number(o['Order Total'] || 0);
+            } else if(o.status === 'Out for Delivery') currentStats.out++;
+            else if(o.status === 'Cancelled' || o.status === 'Returned') currentStats.failed++;
+            else currentStats.pending++;
+        });
+
+        // Calculate changes
+        if(lastStats.total) {
+            const calculateChange = (current, last) => {
+                if(last === 0) return current > 0 ? '+∞' : '0%';
+                const change = ((current - last) / last * 100).toFixed(1);
+                return `${change >= 0 ? '+' : ''}${change}%`;
+            };
+
+            els.stats.totalChange.textContent = calculateChange(currentStats.total, lastStats.total);
+            els.stats.pendingChange.textContent = calculateChange(currentStats.pending, lastStats.pending);
+            els.stats.outChange.textContent = calculateChange(currentStats.out, lastStats.out);
+            els.stats.deliveredChange.textContent = calculateChange(currentStats.delivered, lastStats.delivered);
+            els.stats.failedChange.textContent = calculateChange(currentStats.failed, lastStats.failed);
+            
+            // Update classes for color coding
+            els.stats.totalChange.className = `stat-change ${currentStats.total >= lastStats.total ? 'positive' : 'negative'}`;
+            els.stats.deliveredChange.className = `stat-change ${currentStats.delivered >= lastStats.delivered ? 'positive' : 'negative'}`;
+        }
+
+        // Update display
+        els.stats.total.textContent = currentStats.total;
+        els.stats.pending.textContent = currentStats.pending;
+        els.stats.out.textContent = currentStats.out;
+        els.stats.delivered.textContent = currentStats.delivered;
+        els.stats.failed.textContent = currentStats.failed;
+
+        // Store for next comparison
+        lastStats = currentStats;
+    }
+
+    function renderTable() {
+        els.tableBody.innerHTML = '';
+        selectedOrders.clear();
+        els.inputs.selectAll.checked = false;
+        
+        if(filteredData.length === 0) {
+            els.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:40px;">
+                        <i class="fas fa-inbox" style="font-size:3rem; color:#ddd; margin-bottom:15px;"></i>
+                        <p>No orders found</p>
+                        <button class="btn btn-primary" onclick="addNewOrder()">
+                            <i class="fas fa-plus"></i> Add New Order
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Calculate pagination
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, filteredData.length);
+        const pageData = filteredData.slice(startIndex, endIndex);
+
+        pageData.forEach(order => {
+            const tr = document.createElement('tr');
+            const statusClass = order.status ? order.status.toLowerCase().replace(/\s+/g, '') : 'pending';
+            const orderDate = new Date(order['Order Date']);
+            const formattedDate = orderDate.toLocaleDateString() + ' ' + orderDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            tr.innerHTML = `
+                <td><input type="checkbox" class="order-checkbox" value="${order['Order no']}"></td>
+                <td><strong>${order['Order no']}</strong></td>
+                <td>
+                    <div>${order['Cus. Name']}</div>
+                    <small style="color:#666; font-size:0.8rem;">${order['Cus Phone']}</small>
+                </td>
+                <td>${formattedDate}</td>
+                <td>${order['Agent Name'] || '<span style="color:#aaa">Unassigned</span>'}</td>
+                <td><strong>AED ${Number(order['Order Total'] || 0).toFixed(2)}</strong></td>
+                <td><span class="status-badge status-${statusClass}">${order.status || 'Pending'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="openModal('${order['Order no']}'); event.stopPropagation();">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSingleOrder('${order['Order no']}'); event.stopPropagation();">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tr.onclick = (e) => {
+                if(!e.target.matches('input[type="checkbox"]') && !e.target.matches('button')) {
+                    openModal(order['Order no']);
+                }
+            };
+            
+            tr.querySelector('.order-checkbox').addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    selectedOrders.add(order['Order no']);
+                } else {
+                    selectedOrders.delete(order['Order no']);
+                }
+                updateBulkActions();
+            });
+            
+            els.tableBody.appendChild(tr);
+        });
+
+        updatePaginationButtons();
+    }
+
+    function updateTableInfo() {
+        const total = filteredData.length;
+        const start = Math.min((currentPage - 1) * pageSize + 1, total);
+        const end = Math.min(currentPage * pageSize, total);
+        
+        document.getElementById('tableInfo').textContent = `Showing ${start}-${end} of ${total} orders`;
+        document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${Math.ceil(total / pageSize)}`;
+    }
+
+    function updatePaginationButtons() {
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+    }
+
+    function nextPage() {
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        if(currentPage < totalPages) {
+            currentPage++;
+            renderTable();
+            updateTableInfo();
+            updatePaginationButtons();
+        }
+    }
+
+    function previousPage() {
+        if(currentPage > 1) {
+            currentPage--;
+            renderTable();
+            updateTableInfo();
+            updatePaginationButtons();
+        }
+    }
+
+    // ================= Enhanced Charts Logic =================
+    function updateCharts() {
+        renderStatusChart();
+        
+        if(document.getElementById('analytics-tab').classList.contains('active')) {
+            renderAnalyticsCharts();
+        }
+    }
+
+    function renderStatusChart() {
+        const statusCounts = {};
+        filteredData.forEach(o => { 
+            const status = o.status || 'Pending';
+            statusCounts[status] = (statusCounts[status] || 0) + 1; 
+        });
+        
+        const colors = {
+            'Pending': '#f39c12',
+            'Assigned': '#16a085',
+            'Out for Delivery': '#3498db',
+            'Delivered': '#27ae60',
+            'Cancelled': '#e74c3c',
+            'Returned': '#8e44ad',
+            'Postponed': '#95a5a6'
+        };
+        
+        const backgroundColors = Object.keys(statusCounts).map(status => colors[status] || '#cccccc');
+        
+        renderChart('statusChart', 'doughnut', {
+            labels: Object.keys(statusCounts),
+            datasets: [{
+                data: Object.values(statusCounts),
+                backgroundColor: backgroundColors,
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        });
+    }
+
+    function renderAnalyticsCharts() {
+        renderOutletChart();
+        renderTrendChart();
+        renderRevenueChart();
+    }
+
+    function renderOutletChart() {
+        const outletData = {};
+        ordersData.forEach(o => {
+            const outlet = o['Outlet'] || 'Unknown';
+            outletData[outlet] = (outletData[outlet] || 0) + Number(o['Order Total'] || 0);
+        });
+        
+        // Sort by revenue
+        const sortedOutlets = Object.entries(outletData).sort((a, b) => b[1] - a[1]);
+        const labels = sortedOutlets.map(([outlet]) => outlet);
+        const data = sortedOutlets.map(([, revenue]) => revenue);
+        
+        renderChart('outletChart', 'bar', {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (AED)',
+                data: data,
+                backgroundColor: '#3498db',
+                borderColor: '#2980b9',
+                borderWidth: 1
+            }]
+        });
+    }
+
+    function renderTrendChart() {
+        const hourData = Array(24).fill(0);
+        ordersData.forEach(o => {
+            if(o['Order Date']) {
+                const date = new Date(o['Order Date']);
+                const hour = date.getHours();
+                hourData[hour]++;
+            }
+        });
+        
+        const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
+        
+        renderChart('trendChart', 'line', {
+            labels: hourLabels,
+            datasets: [{
+                label: 'Orders per Hour',
+                data: hourData,
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2
+            }]
+        });
+    }
+
+    function renderRevenueChart() {
+        // Group by date
+        const revenueByDate = {};
+        ordersData.forEach(o => {
+            if(o.status === 'Delivered') {
+                const date = new Date(o['Order Date']).toISOString().split('T')[0];
+                revenueByDate[date] = (revenueByDate[date] || 0) + Number(o['Order Total'] || 0);
+            }
+        });
+        
+        // Get last 7 days
+        const dates = [];
+        const revenues = [];
+        const today = new Date();
+        
+        for(let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            dates.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            revenues.push(revenueByDate[dateStr] || 0);
+        }
+        
+        renderChart('revenueChart', 'line', {
+            labels: dates,
+            datasets: [{
+                label: 'Daily Revenue (AED)',
+                data: revenues,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3
+            }]
+        });
+    }
+
+    function renderChart(canvasId, type, data) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        
+        if(charts[canvasId]) {
+            charts[canvasId].destroy();
+        }
+
+        charts[canvasId] = new Chart(ctx, {
+            type: type,
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'nearest'
+                },
+                scales: (type === 'line' || type === 'bar') ? {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    }
+                } : {}
+            }
+        });
+    }
+
+    function refreshCharts() {
+        Object.keys(charts).forEach(canvasId => {
+            if(charts[canvasId]) {
+                charts[canvasId].destroy();
+                delete charts[canvasId];
+            }
+        });
+        updateCharts();
+        showToast('Charts refreshed', 'success');
+    }
+
+    // ================= Enhanced Agent Performance =================
+    function calculateAgentStats() {
+        const agentStats = {};
+        const target = parseFloat(els.inputs.dailyTarget.value) || settings.defaultTarget;
+        
+        filteredData.forEach(o => {
+            const agent = o['Agent Name'] || 'Unassigned';
+            if(!agentStats[agent]) {
+                agentStats[agent] = { 
+                    name: agent, 
+                    total: 0, 
+                    delivered: 0, 
+                    revenue: 0, 
+                    cancelled: 0,
+                    pending: 0,
+                    outForDelivery: 0
+                };
+            }
+            
+            agentStats[agent].total++;
+            if(o.status === 'Delivered') {
+                agentStats[agent].delivered++;
+                agentStats[agent].revenue += Number(o['Order Total'] || 0);
+            } else if(o.status === 'Cancelled' || o.status === 'Returned') {
+                agentStats[agent].cancelled++;
+            } else if(o.status === 'Pending' || o.status === 'Assigned') {
+                agentStats[agent].pending++;
+            } else if(o.status === 'Out for Delivery') {
+                agentStats[agent].outForDelivery++;
+            }
+        });
+
+        // Calculate percentages
+        Object.values(agentStats).forEach(a => {
+            a.successRate = a.total > 0 ? Math.round((a.delivered / a.total) * 100) : 0;
+            a.targetPercent = Math.min((a.revenue / target) * 100, 100);
+            a.efficiency = a.delivered > 0 ? Math.round(a.revenue / a.delivered) : 0;
+        });
+
+        return agentStats;
+    }
+
+    function renderAgentPerformance() {
+        els.agentGrid.innerHTML = '';
+        const agentStats = calculateAgentStats();
+        
+        // Sort by revenue
+        const sortedAgents = Object.values(agentStats).sort((a, b) => b.revenue - a.revenue);
+        
+        if(sortedAgents.length === 0) {
+            els.agentGrid.innerHTML = `
+                <div style="text-align:center; padding:40px; grid-column:span 2;">
+                    <i class="fas fa-users" style="font-size:3rem; color:#ddd;"></i>
+                    <p>No agent data available</p>
+                </div>
+            `;
+            return;
+        }
+
+        sortedAgents.forEach(a => {
+            const initial = a.name.charAt(0).toUpperCase();
+            const rating = Math.min(5, Math.ceil(a.successRate / 20));
+            const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+            const card = document.createElement('div');
+            card.className = 'agent-card';
+            card.innerHTML = `
+                <div class="agent-header">
+                    <div class="agent-avatar">${initial}</div>
+                    <div class="agent-details">
+                        <h4>${a.name}</h4>
+                        <div style="color:gold; margin:5px 0;">${stars}</div>
+                        <div class="agent-stats">
+                            <span class="mini-badge">${a.total} Total</span>
+                            <span class="mini-badge" style="background:#d4edda; color:#155724">${a.delivered} Delivered</span>
+                            <span class="mini-badge" style="background:#f8d7da; color:#721c24">${a.cancelled} Failed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Success Rate</span>
+                        <span>${a.successRate}%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${a.successRate}%; background-color: var(--info-color)"></div>
+                    </div>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Revenue: AED ${a.revenue.toFixed(2)}</span>
+                        <span>${a.targetPercent.toFixed(1)}% of target</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${a.targetPercent}%; background-color: var(--success-color)"></div>
+                    </div>
+                </div>
+                <div style="margin-top:15px; font-size:0.8rem; color:#666;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Pending: ${a.pending}</span>
+                        <span>In Transit: ${a.outForDelivery}</span>
+                    </div>
+                </div>
+            `;
+            els.agentGrid.appendChild(card);
+        });
+        
+        updateAgentCountBadge(sortedAgents.length);
+    }
+
+    // ================= Enhanced Order Management =================
+    function addNewOrder() {
+        const orderId = `ORD-${Date.now()}`;
+        const newOrder = {
+            'Order no': orderId,
+            'Order Date': new Date().toISOString(),
+            'Cus. Name': '',
+            'Cus Phone': '',
+            'Address': '',
+            'Outlet': branches[0] || '',
+            'Order Total': '0.00',
+            'Agent Name': '',
+            'status': 'Pending',
+            'Payment Status': 'Pending',
+            'Notes': '',
+            'Order Items': '',
+            'Created Date': new Date().toISOString(),
+            'Last Updated': new Date().toISOString()
+        };
+        
+        ordersData.unshift(newOrder);
+        saveData();
+        openModal(orderId);
+        showToast('New order created', 'success');
+    }
+
+    function openModal(orderId) {
+        const order = ordersData.find(o => o['Order no'] === orderId);
+        if(!order) {
+            showToast('Order not found', 'error');
+            return;
+        }
+        
+        currentEditingId = orderId;
+        
+        // Fill Fields
+        els.modal.id.value = order['Order no'];
+        els.modal.date.value = new Date(order['Order Date']).toLocaleString();
+        els.modal.customer.value = order['Cus. Name'] || '';
+        els.modal.phone.value = order['Cus Phone'] || '';
+        els.modal.address.value = order['Address'] || '';
+        els.modal.amount.value = order['Order Total'] || '0.00';
+        els.modal.status.value = order['status'] || 'Pending';
+        els.modal.notes.value = order['Notes'] || '';
+        els.modal.items.value = order['Order Items'] || '';
+        els.modal.payment.value = order['Payment Status'] || 'Pending';
+        
+        // Fill Outlet Dropdown
+        els.modal.outlet.innerHTML = '';
+        branches.forEach(branch => {
+            const opt = document.createElement('option');
+            opt.value = branch;
+            opt.textContent = branch;
+            if(branch === order['Outlet']) opt.selected = true;
+            els.modal.outlet.appendChild(opt);
+        });
+        
+        // Fill Agent Dropdown
+        els.modal.agent.innerHTML = '<option value="">Unassigned</option>';
+        agents.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a;
+            if(a === order['Agent Name']) opt.selected = true;
+            els.modal.agent.appendChild(opt);
+        });
+
+        els.modal.self.style.display = 'flex';
+    }
+
+    function closeModal() {
+        els.modal.self.style.display = 'none';
+        currentEditingId = null;
+    }
+
+    function saveOrder() {
+        if(!currentEditingId) return;
+        
+        const order = ordersData.find(o => o['Order no'] === currentEditingId);
+        if(order) {
+            order['Cus. Name'] = els.modal.customer.value;
+            order['Cus Phone'] = els.modal.phone.value;
+            order['Address'] = els.modal.address.value;
+            order['Order Total'] = els.modal.amount.value;
+            order['Outlet'] = els.modal.outlet.value;
+            order['status'] = els.modal.status.value;
+            order['Agent Name'] = els.modal.agent.value;
+            order['Notes'] = els.modal.notes.value;
+            order['Order Items'] = els.modal.items.value;
+            order['Payment Status'] = els.modal.payment.value;
+            order['Last Updated'] = new Date().toISOString();
+            
+            saveData();
+            refreshUI();
+            showToast('Order updated successfully', 'success');
+            closeModal();
+        }
+    }
+
+    function deleteOrder() {
+        if(!currentEditingId) return;
+        
+        showConfirmDialog(
+            'Delete Order',
+            `Are you sure you want to delete order ${currentEditingId}? This action cannot be undone.`,
+            () => {
+                const index = ordersData.findIndex(o => o['Order no'] === currentEditingId);
+                if(index !== -1) {
+                    ordersData.splice(index, 1);
+                    saveData();
+                    refreshUI();
+                    showToast('Order deleted successfully', 'success');
+                    closeModal();
+                }
+            }
+        );
+    }
+
+    function deleteSingleOrder(orderId) {
+        showConfirmDialog(
+            'Delete Order',
+            `Delete order ${orderId}?`,
+            () => {
+                const index = ordersData.findIndex(o => o['Order no'] === orderId);
+                if(index !== -1) {
+                    ordersData.splice(index, 1);
+                    saveData();
+                    refreshUI();
+                    showToast('Order deleted', 'success');
+                }
+            }
+        );
+    }
+
+    // ================= Bulk Operations =================
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = els.inputs.selectAll.checked;
+            if(cb.checked) {
+                selectedOrders.add(cb.value);
+            } else {
+                selectedOrders.delete(cb.value);
+            }
+        });
+        updateBulkActions();
+    }
+
+    function updateBulkActions() {
+        const count = selectedOrders.size;
+        if(count > 0) {
+            showToast(`${count} orders selected`, 'info');
+        }
+    }
+
+    function bulkAssign() {
+        if(selectedOrders.size === 0) {
+            showToast('No orders selected', 'warning');
+            return;
+        }
+        
+        // Create agent selection dialog
+        showConfirmDialog(
+            'Bulk Assign Agents',
+            `Assign ${selectedOrders.size} orders to which agent?`,
+            () => {
+                const agentSelect = document.createElement('select');
+                agentSelect.className = 'form-control';
+                agentSelect.innerHTML = '<option value="">Select Agent</option>' + 
+                    agents.map(a => `<option value="${a}">${a}</option>`).join('');
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.appendChild(agentSelect);
+                
+                showConfirmDialog(
+                    'Select Agent',
+                    tempDiv.innerHTML,
+                    () => {
+                        const selectedAgent = agentSelect.value;
+                        if(selectedAgent) {
+                            let updated = 0;
+                            ordersData.forEach(order => {
+                                if(selectedOrders.has(order['Order no'])) {
+                                    order['Agent Name'] = selectedAgent;
+                                    order['status'] = 'Assigned';
+                                    order['Last Updated'] = new Date().toISOString();
+                                    updated++;
+                                }
+                            });
+                            
+                            saveData();
+                            refreshUI();
+                            showToast(`Assigned ${updated} orders to ${selectedAgent}`, 'success');
+                        }
+                    }
+                );
+            }
+        );
+    }
+
+    function bulkDelete() {
+        if(selectedOrders.size === 0) {
+            showToast('No orders selected', 'warning');
+            return;
+        }
+        
+        showConfirmDialog(
+            'Bulk Delete',
+            `Delete ${selectedOrders.size} orders? This cannot be undone.`,
+            () => {
+                ordersData = ordersData.filter(order => !selectedOrders.has(order['Order no']));
+                selectedOrders.clear();
+                saveData();
+                refreshUI();
+                showToast(`Deleted ${selectedOrders.size} orders`, 'success');
+            }
+        );
+    }
+
+    // ================= Enhanced Filter Functions =================
+    function filterByStatus(statuses) {
+        if(statuses === 'All') {
+            els.inputs.filterStatus.value = 'All';
+        } else {
+            els.inputs.filterStatus.value = statuses.split(',')[0];
+        }
+        refreshUI();
+    }
+
+    function clearFilters() {
+        els.inputs.filterAgent.value = 'All';
+        els.inputs.filterStatus.value = 'All';
+        els.inputs.filterOutlet.value = 'All';
+        els.inputs.search.value = '';
+        setupDefaultDates();
+        refreshUI();
+        showToast('Filters cleared', 'info');
+    }
+
+    function populateAgentFilter() {
+        const currentVal = els.inputs.filterAgent.value;
+        els.inputs.filterAgent.innerHTML = '<option value="All">All Agents</option>';
+        agents.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a;
+            els.inputs.filterAgent.appendChild(opt);
+        });
+        els.inputs.filterAgent.value = currentVal;
+    }
+
+    function populateOutletFilter() {
+        const currentVal = els.inputs.filterOutlet.value;
+        els.inputs.filterOutlet.innerHTML = '<option value="All">All Outlets</option>';
+        branches.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b;
+            opt.textContent = b;
+            els.inputs.filterOutlet.appendChild(opt);
+        });
+        els.inputs.filterOutlet.value = currentVal;
+    }
+
+    // ================= Enhanced System Functions =================
+    function openSettings() {
+        document.getElementById('companyName').value = settings.companyName;
+        document.getElementById('defaultTarget').value = settings.defaultTarget;
+        document.getElementById('autoSaveInterval').value = settings.autoSaveInterval;
+        document.getElementById('enableNotifications').checked = settings.enableNotifications;
+        document.getElementById('enableSound').checked = settings.enableSound;
+        document.getElementById('exportFormat').value = settings.exportFormat;
+        
+        els.settingsModal.style.display = 'flex';
+    }
+
+    function closeSettings() {
+        els.settingsModal.style.display = 'none';
+    }
+
+    function saveSettings() {
+        settings.companyName = document.getElementById('companyName').value;
+        settings.defaultTarget = parseInt(document.getElementById('defaultTarget').value);
+        settings.autoSaveInterval = parseInt(document.getElementById('autoSaveInterval').value);
+        settings.enableNotifications = document.getElementById('enableNotifications').checked;
+        settings.enableSound = document.getElementById('enableSound').checked;
+        settings.exportFormat = document.getElementById('exportFormat').value;
+        
+        saveSettings();
+        applySettings();
+        setupAutoSave();
+        
+        showToast('Settings saved', 'success');
+        closeSettings();
+    }
+
+    function resetSystem() {
+        showConfirmDialog(
+            'Reset System',
+            'This will delete ALL data including orders, branches, and agents. Are you absolutely sure?',
+            () => {
+                localStorage.clear();
+                ordersData = [];
+                branches = [...defaultBranches];
+                agents = [...defaultAgents];
+                settings = {
+                    companyName: "Delivery Crispy Chicken",
+                    defaultTarget: 2000,
+                    autoSaveInterval: 30,
+                    enableNotifications: true,
+                    enableSound: true,
+                    exportFormat: "excel"
+                };
+                
+                saveSystemData();
+                saveSettings();
+                applySettings();
+                refreshUI();
+                showToast('System reset to factory defaults', 'info');
+            }
+        );
+    }
+
+    function backupSystem() {
+        const backup = {
+            orders: ordersData,
+            branches: branches,
+            agents: agents,
+            settings: settings,
+            timestamp: new Date().toISOString(),
+            version: '2.0.0'
+        };
+        
+        const backupStr = JSON.stringify(backup, null, 2);
+        const blob = new Blob([backupStr], { type: 'application/json' });
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        const filename = `${settings.companyName}_Backup_${timestamp}.json`;
+        
+        saveAs(blob, filename);
+        showToast('System backup created', 'success');
+        
+        // Update last backup time
+        document.getElementById('sysLastBackup').textContent = new Date().toLocaleString();
+    }
+
+    function restoreBackup() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const backup = JSON.parse(evt.target.result);
+                    
+                    showConfirmDialog(
+                        'Restore Backup',
+                        'This will replace all current data. Continue?',
+                        () => {
+                            ordersData = backup.orders || [];
+                            branches = backup.branches || defaultBranches;
+                            agents = backup.agents || defaultAgents;
+                            settings = backup.settings || settings;
+                            
+                            saveSystemData();
+                            saveSettings();
+                            applySettings();
+                            refreshUI();
+                            showToast('Backup restored successfully', 'success');
+                        }
+                    );
+                } catch (err) {
+                    showToast('Invalid backup file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    // ================= Enhanced End of Day =================
+    function endDay() {
+        showConfirmDialog(
+            'End of Day - Step 1',
+            'This will export today\'s report and archive completed orders. Continue?',
+            () => {
+                showLoading(true, 'Exporting report...');
+                
+                setTimeout(() => {
+                    const exportSuccess = exportData();
+                    
+                    if(exportSuccess) {
+                        showLoading(true, 'Archiving orders...');
+                        
+                        setTimeout(() => {
+                            // Archive delivered orders
+                            const deliveredOrders = ordersData.filter(o => o.status === 'Delivered');
+                            const archiveKey = `archive_${new Date().toISOString().split('T')[0]}`;
+                            localStorage.setItem(archiveKey, JSON.stringify(deliveredOrders));
+                            
+                            // Remove delivered orders from active list
+                            ordersData = ordersData.filter(o => o.status !== 'Delivered');
+                            
+                            // Reset pending orders status
+                            ordersData.forEach(o => {
+                                if(o.status === 'Out for Delivery' || o.status === 'Assigned') {
+                                    o.status = 'Pending';
+                                    o['Agent Name'] = '';
+                                }
+                            });
+                            
+                            saveData();
+                            refreshUI();
+                            showLoading(false);
+                            showToast('End of day completed. Report exported and orders archived.', 'success');
+                        }, 500);
+                    } else {
+                        showLoading(false);
+                        showToast('End of day cancelled. Export failed.', 'error');
+                    }
+                }, 1000);
+            }
+        );
+    }
+
+    // ================= Enhanced Utility Functions =================
+    function saveData() {
+        try {
+            localStorage.setItem('deliveryApp_orders', JSON.stringify(ordersData));
+            localStorage.setItem('deliveryApp_target', els.inputs.dailyTarget.value);
+            localStorage.setItem('deliveryApp_lastSaved', new Date().toISOString());
+            
+            // Update system info
+            if(document.getElementById('sysLastSaved')) {
+                document.getElementById('sysLastSaved').textContent = 'Just now';
+            }
+        } catch (e) {
+            if(e.name === 'QuotaExceededError') {
+                showToast('Storage full! Please export and clear old data.', 'error');
+                checkStorageQuota();
+            }
+        }
+    }
+
+    function loadData() {
+        try {
+            const saved = localStorage.getItem('deliveryApp_orders');
+            if(saved) {
+                ordersData = JSON.parse(saved);
+                els.inputs.dailyTarget.value = localStorage.getItem('deliveryApp_target') || settings.defaultTarget;
+                populateAgentFilter();
+                populateOutletFilter();
+                refreshUI();
+            }
+        } catch (e) {
+            console.error('Error loading data:', e);
+            showToast('Error loading saved data', 'error');
+        }
+    }
+
+    function checkStorageQuota() {
+        try {
+            const used = JSON.stringify(localStorage).length;
+            const quota = 5 * 1024 * 1024; // 5MB typical quota
+            const percent = (used / quota * 100).toFixed(1);
+            
+            if(percent > 80) {
+                showToast(`Storage ${percent}% full. Consider exporting and clearing old data.`, 'warning');
+            }
+        } catch (e) {
+            // Can't check quota in some browsers
+        }
+    }
+
+    function checkSystemHealth() {
+        // Check if data structure is valid
+        if(!Array.isArray(ordersData)) {
+            ordersData = [];
+            saveData();
+        }
+        
+        // Check for duplicates
+        const orderIds = new Set();
+        const duplicates = [];
+        ordersData.forEach(order => {
+            if(orderIds.has(order['Order no'])) {
+                duplicates.push(order['Order no']);
+            } else {
+                orderIds.add(order['Order no']);
+            }
+        });
+        
+        if(duplicates.length > 0) {
+            showToast(`Found ${duplicates.length} duplicate orders`, 'warning');
+        }
+    }
+
+    function checkAlerts() {
+        alerts = [];
+        
+        // Check for overdue orders (pending for more than 2 hours)
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        ordersData.forEach(order => {
+            if(order.status === 'Pending' || order.status === 'Assigned') {
+                const orderDate = new Date(order['Order Date']);
+                if(orderDate < twoHoursAgo) {
+                    alerts.push({
+                        type: 'warning',
+                        message: `Order ${order['Order no']} is overdue`,
+                        orderId: order['Order no']
+                    });
+                }
+            }
+        });
+        
+        // Check for unassigned orders
+        const unassigned = ordersData.filter(o => !o['Agent Name'] && o.status !== 'Delivered' && o.status !== 'Cancelled');
+        if(unassigned.length > 3) {
+            alerts.push({
+                type: 'danger',
+                message: `${unassigned.length} orders need assignment`,
+                count: unassigned.length
+            });
+        }
+        
+        // Update alert badge
+        if(alerts.length > 0) {
+            els.alertCount.textContent = alerts.length;
+            els.alertCount.style.display = 'inline-block';
+            
+            // Show notification
+            if(settings.enableNotifications && Notification.permission === "granted") {
+                new Notification(`${alerts.length} alerts - ${settings.companyName}`, {
+                    body: `You have ${alerts.length} pending alerts`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1046/1046874.png'
+                });
+            }
+        } else {
+            els.alertCount.style.display = 'none';
+        }
+    }
+
+    function showAlerts() {
+        if(alerts.length === 0) {
+            showToast('No alerts', 'info');
+            return;
+        }
+        
+        let alertHTML = '<div style="max-height:300px; overflow-y:auto;">';
+        alerts.forEach(alert => {
+            alertHTML += `
+                <div style="padding:10px; margin:5px 0; background:${alert.type === 'danger' ? '#f8d7da' : '#fff3cd'}; 
+                          border-left:4px solid ${alert.type === 'danger' ? '#dc3545' : '#ffc107'};">
+                    <strong>${alert.type.toUpperCase()}:</strong> ${alert.message}
+                    ${alert.orderId ? `<button class="btn btn-sm btn-primary" onclick="openModal('${alert.orderId}'); closeConfirmDialog();" style="margin-left:10px;">View</button>` : ''}
+                </div>
+            `;
+        });
+        alertHTML += '</div>';
+        
+        showConfirmDialog('System Alerts', alertHTML, () => {
+            // Clear alerts after viewing
+            alerts = [];
+            els.alertCount.style.display = 'none';
+        });
+    }
+
+    function updateBadges() {
+        // Order count badge
+        const activeOrders = ordersData.filter(o => 
+            o.status !== 'Delivered' && o.status !== 'Cancelled'
+        ).length;
+        
+        if(activeOrders > 0) {
+            els.orderCountBadge.textContent = activeOrders;
+            els.orderCountBadge.style.display = 'block';
+        } else {
+            els.orderCountBadge.style.display = 'none';
+        }
+        
+        // Agent count badge
+        const activeAgents = new Set(ordersData
+            .filter(o => o['Agent Name'])
+            .map(o => o['Agent Name'])).size;
+        
+        if(activeAgents > 0) {
+            els.agentCountBadge.textContent = activeAgents;
+            els.agentCountBadge.style.display = 'block';
+        } else {
+            els.agentCountBadge.style.display = 'none';
+        }
+    }
+
+    function updateSystemInfo() {
+        const totalSize = JSON.stringify(ordersData).length + 
+                         JSON.stringify(branches).length + 
+                         JSON.stringify(agents).length;
+        
+        document.getElementById('sysTotalOrders').textContent = ordersData.length;
+        document.getElementById('sysDataSize').textContent = Math.round(totalSize / 1024) + ' KB';
+        
+        const lastBackup = localStorage.getItem('deliveryApp_lastBackup');
+        document.getElementById('sysLastBackup').textContent = lastBackup ? 
+            new Date(lastBackup).toLocaleString() : 'Never';
+            
+        document.getElementById('sysAutoSave').textContent = settings.autoSaveInterval > 0 ? 'On' : 'Off';
+        
+        const lastSaved = localStorage.getItem('deliveryApp_lastSaved');
+        if(lastSaved) {
+            const savedDate = new Date(lastSaved);
+            const diff = Math.floor((Date.now() - savedDate.getTime()) / 1000 / 60);
+            document.getElementById('sysLastSaved').textContent = diff < 1 ? 'Just now' : 
+                diff < 60 ? `${diff} minutes ago` : 
+                `${Math.floor(diff/60)} hours ago`;
+        }
+    }
+
+    function startAutoSave() {
+        setupAutoSave();
+    }
+
+    function setupAutoSave() {
+        if(autoSaveTimer) {
+            clearInterval(autoSaveTimer);
+        }
+        
+        if(settings.autoSaveInterval > 0) {
+            autoSaveTimer = setInterval(() => {
+                saveData();
+                // Visual feedback
+                const saveBtn = document.querySelector('[onclick="refreshUI()"]');
+                if(saveBtn) {
+                    const originalHTML = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Auto-saved';
+                    setTimeout(() => {
+                        saveBtn.innerHTML = originalHTML;
+                    }, 1000);
+                }
+            }, settings.autoSaveInterval * 1000);
+        }
+    }
+
+    function updateDateTime() {
+        const now = new Date();
+        els.currentDate.textContent = now.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        els.currentTime.textContent = now.toLocaleTimeString('en-US', { 
+            hour12: true, 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+
+    // ================= Enhanced UI Functions =================
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        const tabIndex = ['orders', 'performance', 'analytics', 'management'].indexOf(tabName);
+        if(tabIndex >= 0) {
+            document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Trigger specific renders
+            switch(tabName) {
+                case 'performance': 
+                    renderAgentPerformance();
+                    break;
+                case 'analytics': 
+                    renderAnalyticsCharts();
+                    break;
+                case 'management': 
+                    renderManagementLists();
+                    updateSystemInfo();
+                    break;
+            }
+        }
+    }
+
+    // ================= Enhanced Modal Functions =================
+    function callCustomer() {
+        const phone = els.modal.phone.value;
+        if(phone) {
+            window.open(`tel:${phone}`, '_blank');
+        } else {
+            showToast('No phone number', 'warning');
+        }
+    }
+
+    function sendSMS() {
+        const phone = els.modal.phone.value;
+        if(phone) {
+            const message = `Hi, this is ${settings.companyName}. Your order status has been updated.`;
+            window.open(`sms:${phone}?body=${encodeURIComponent(message)}`, '_blank');
+        } else {
+            showToast('No phone number', 'warning');
+        }
+    }
+
+    function openMap() {
+        const address = els.modal.address.value;
+        if(address) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+        } else {
+            showToast('No address', 'warning');
+        }
+    }
+
+    function copyAddress() {
+        const address = els.modal.address.value;
+        if(address) {
+            navigator.clipboard.writeText(address).then(() => {
+                showToast('Address copied to clipboard', 'success');
+            });
+        } else {
+            showToast('No address to copy', 'warning');
+        }
+    }
+
+    // ================= Confirmation Dialog =================
+    function showConfirmDialog(title, message, onConfirm, customHTML = null) {
+        els.confirmDialog.title.textContent = title;
+        
+        if(customHTML) {
+            els.confirmDialog.message.innerHTML = customHTML;
+        } else {
+            els.confirmDialog.message.textContent = message;
+        }
+        
+        els.confirmDialog.btn.onclick = () => {
+            closeConfirmDialog();
+            onConfirm();
+        };
+        els.confirmDialog.self.style.display = 'flex';
+    }
+
+    function closeConfirmDialog() {
+        els.confirmDialog.self.style.display = 'none';
+    }
+
+    // ================= Print Function =================
+    function printReport() {
+        window.print();
+    }
+
+    // ================= Utility Functions =================
+    function showToast(msg, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let icon = 'info-circle';
+        if(type === 'success') icon = 'check-circle';
+        if(type === 'error') icon = 'exclamation-circle';
+        if(type === 'warning') icon = 'exclamation-triangle';
+
+        toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${msg}</span>`;
+        
+        // Add sound if enabled
+        if(settings.enableSound && type === 'error') {
+            playSound('error');
+        } else if(settings.enableSound && type === 'success') {
+            playSound('success');
+        }
+        
+        document.getElementById('toastContainer').appendChild(toast);
+        
+        // Auto-remove after delay
+        setTimeout(() => {
+            toast.style.animation = 'slideInRight 0.3s reverse forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function playSound(type) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if(type === 'success') {
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            } else if(type === 'error') {
+                oscillator.frequency.setValueAtTime(392.00, audioContext.currentTime); // G4
+                oscillator.frequency.setValueAtTime(311.13, audioContext.currentTime + 0.1); // D#4
+            }
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+            // Audio not supported
+        }
+    }
+
+    function showLoading(show, text = 'Processing data...') {
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        loadingText.textContent = text;
+        overlay.style.display = show ? 'flex' : 'none';
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+</script>
+
+</body>
+</html>
